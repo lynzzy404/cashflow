@@ -3,7 +3,7 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { db, DEFAULT_EXPENSE_CATEGORIES, DEFAULT_INCOME_CATEGORIES } from '../db';
 import { v4 as uuidv4 } from 'uuid';
 import { format } from 'date-fns';
-import { X, Check, ArrowRightLeft, Calendar as CalendarIcon, FileText, Trash2 } from 'lucide-react';
+import { X, Check, ArrowRightLeft, Calendar as CalendarIcon, Clock, FileText, Trash2 } from 'lucide-react';
 import clsx from 'clsx';
 import { formatNumber, parseNumber, sortCategoriesWithLainnyaLast } from '../utils/formatters';
 import ConfirmDialog from './ui/ConfirmDialog';
@@ -103,6 +103,12 @@ export default function TransactionForm({ onClose, onSuccess, activeFundId, edit
   const handleSubmit = async () => {
     if (!amount || !walletId) return;
     const numAmount = parseNumber(amount);
+    
+    // Validasi angka tidak boleh 0
+    if (numAmount === 0) {
+      onShowToast?.('Nominal tidak boleh 0', 'error');
+      return;
+    }
     
     // Combine date and time into ISO string
     const dateTime = new Date(`${date}T${time}:00`).toISOString();
@@ -236,17 +242,17 @@ export default function TransactionForm({ onClose, onSuccess, activeFundId, edit
 
   return (
     <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 transition-opacity">
-      <div className="bg-white w-full max-w-md h-[92vh] sm:h-auto sm:rounded-2xl flex flex-col shadow-2xl rounded-t-2xl overflow-hidden">
+      <div className="bg-white w-full max-w-md h-[92vh] sm:max-h-[90vh] sm:rounded-2xl flex flex-col shadow-2xl rounded-t-2xl overflow-hidden">
         {/* Header */}
-        <div className="px-5 py-4 border-b border-slate-100 flex justify-between items-center bg-white sticky top-0 z-10">
-          <h2 className="text-lg font-semibold text-slate-800">
+        <div className="px-4 sm:px-5 py-3 sm:py-4 border-b border-slate-100 flex justify-between items-center bg-white sticky top-0 z-10">
+          <h2 className="text-base sm:text-lg font-semibold text-slate-800 truncate">
             {isEditMode ? 'Edit Transaksi' : 'Catat Transaksi'}
           </h2>
-          <button onClick={onClose} className="p-1.5 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors"><X size={18} className="text-slate-600" /></button>
+          <button onClick={onClose} className="p-1.5 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors flex-shrink-0"><X size={18} className="text-slate-600" /></button>
         </div>
 
         {/* Tabs - Disable type switching in edit mode */}
-        <div className="px-5 pt-4 bg-white">
+        <div className="px-4 sm:px-5 pt-3 sm:pt-4 bg-white">
           <div className="flex p-1 gap-1 bg-slate-100 rounded-xl">
             {['expense', 'income', 'transfer'].map(t => (
               <button
@@ -254,7 +260,7 @@ export default function TransactionForm({ onClose, onSuccess, activeFundId, edit
                 onClick={() => !isEditMode && setType(t)}
                 disabled={isEditMode}
                 className={clsx(
-                  "flex-1 py-2 rounded-lg font-medium text-xs capitalize transition-all duration-200",
+                  "flex-1 py-1.5 sm:py-2 rounded-lg font-medium text-[10px] sm:text-xs capitalize transition-all duration-200",
                   type === t ?
                     "bg-white text-slate-800 shadow-sm"
                     : "text-slate-500 hover:text-slate-700",
@@ -268,16 +274,16 @@ export default function TransactionForm({ onClose, onSuccess, activeFundId, edit
         </div>
 
         {/* Form */}
-        <div className="px-5 py-5 flex-1 overflow-y-auto space-y-5">
+        <div className="px-4 sm:px-5 py-4 sm:py-5 flex-1 overflow-y-auto space-y-4 sm:space-y-5">
           {/* Amount */}
-          <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 focus-within:ring-2 focus-within:ring-emerald-100 transition-shadow">
-            <label className="block text-[11px] font-medium text-slate-400 uppercase mb-1">Nominal</label>
+          <div className="bg-slate-50 p-3 sm:p-4 rounded-lg sm:rounded-xl border border-slate-100 focus-within:ring-2 focus-within:ring-emerald-100 transition-shadow">
+            <label className="block text-[10px] sm:text-[11px] font-medium text-slate-400 uppercase mb-1">Nominal</label>
             <div className="flex items-center gap-2">
-              <span className="text-xl font-semibold text-slate-400">Rp</span>
+              <span className="text-lg sm:text-xl font-semibold text-slate-400 flex-shrink-0">Rp</span>
               <input
                 type="text"
                 inputMode="numeric"
-                className="text-2xl font-bold w-full bg-transparent outline-none text-slate-800 placeholder-slate-300"
+                className="text-xl sm:text-2xl font-bold w-full bg-transparent outline-none text-slate-800 placeholder-slate-300"
                 placeholder="0"
                 autoFocus={!isEditMode}
                 value={amount}
@@ -287,44 +293,44 @@ export default function TransactionForm({ onClose, onSuccess, activeFundId, edit
           </div>
 
           {/* Wallet Selection */}
-          <div className="flex gap-3">
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
             <div className="flex-1">
-              <label className="block text-[11px] font-medium text-slate-400 uppercase mb-1.5">
+              <label className="block text-[10px] sm:text-[11px] font-medium text-slate-400 uppercase mb-1 sm:mb-1.5">
                 {type === 'transfer' ? 'Dari' : 'Dompet'}
               </label>
               <div className="relative">
                 <select
-                  className="w-full p-2.5 pl-3 pr-8 bg-white border border-slate-200 rounded-lg appearance-none text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
+                  className="w-full p-2 sm:p-2.5 pl-8 pr-8 bg-white border border-slate-200 rounded-lg appearance-none text-xs sm:text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
                   value={walletId}
                   onChange={e => setWalletId(e.target.value)}
                 >
                   {wallets?.map(w => <option key={w.uuid} value={w.uuid}>{w.name}</option>)}
                 </select>
-                <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                <div className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 flex-shrink-0">
                   <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2.5 4.5L6 8L9.5 4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
                 </div>
               </div>
             </div>
 
             {type === 'transfer' && (
-              <div className="flex items-center pt-5 text-teal-500">
-                <ArrowRightLeft size={20} />
+              <div className="hidden sm:flex items-center pt-5 text-teal-500 flex-shrink-0">
+                <ArrowRightLeft size={18} className="sm:w-5 sm:h-5" />
               </div>
             )}
 
             {type === 'transfer' && (
               <div className="flex-1">
-                <label className="block text-[11px] font-medium text-slate-400 uppercase mb-1.5">Ke</label>
+                <label className="block text-[10px] sm:text-[11px] font-medium text-slate-400 uppercase mb-1 sm:mb-1.5">Ke</label>
                 <div className="relative">
                   <select
-                    className="w-full p-2.5 pl-3 pr-8 bg-white border border-slate-200 rounded-lg appearance-none text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
+                    className="w-full p-2 sm:p-2.5 pl-8 pr-8 bg-white border border-slate-200 rounded-lg appearance-none text-xs sm:text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
                     value={toWalletId}
                     onChange={e => setToWalletId(e.target.value)}
                   >
                     <option value="">Pilih...</option>
                     {wallets?.filter(w => w.uuid !== walletId).map(w => <option key={w.uuid} value={w.uuid}>{w.name}</option>)}
                   </select>
-                  <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                  <div className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 flex-shrink-0">
                     <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2.5 4.5L6 8L9.5 4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
                   </div>
                 </div>
@@ -335,32 +341,32 @@ export default function TransactionForm({ onClose, onSuccess, activeFundId, edit
           {/* Fund Selection - Only show if no activeFundId (Semua Dana mode) */}
           {!activeFundId ? (
             <div>
-              <label className="block text-[11px] font-medium text-slate-400 uppercase mb-2">Dana</label>
-              <div className="flex flex-wrap gap-2">
+              <label className="block text-[10px] sm:text-[11px] font-medium text-slate-400 uppercase mb-2">Dana</label>
+              <div className="flex flex-wrap gap-1.5 sm:gap-2">
                 {funds?.map(f => (
                   <button
                     key={f.uuid}
                     onClick={() => setFundId(f.uuid)}
                     className={clsx(
-                      "px-3 py-1.5 rounded-lg text-xs font-medium border transition-all duration-200 flex items-center gap-1.5",
+                      "px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg text-[10px] sm:text-xs font-medium border transition-all duration-200 flex items-center gap-1 flex-shrink-0",
                       fundId === f.uuid
-                        ? "bg-slate-800 text-white border-slate-800"
+                        ? "bg-slate-100 text-slate-800 border-slate-400"
                         : "bg-white text-slate-600 border-slate-200 hover:border-slate-300"
                     )}
                   >
-                    <span>{f.icon}</span>
-                    <span>{f.name}</span>
+                    <span className="text-sm">{f.icon}</span>
+                    <span className="hidden sm:inline">{f.name}</span>
                   </button>
                 ))}
               </div>
             </div>
           ) : (
             <div>
-              <label className="block text-[11px] font-medium text-slate-400 uppercase mb-2">Dana Aktif</label>
-              <div className="flex items-center gap-2 px-3 py-2 bg-emerald-50 rounded-lg border border-emerald-200">
-                <span className="text-base">{funds?.find(f => f.uuid === activeFundId)?.icon}</span>
-                <span className="text-sm font-medium text-emerald-700">{funds?.find(f => f.uuid === activeFundId)?.name}</span>
-                <span className="text-xs text-emerald-500 ml-auto">Otomatis</span>
+              <label className="block text-[10px] sm:text-[11px] font-medium text-slate-400 uppercase mb-2">Dana Aktif</label>
+              <div className="flex items-center gap-2 px-3 py-2 sm:py-2.5 bg-emerald-50 rounded-lg border border-emerald-200">
+                <span className="text-base flex-shrink-0">{funds?.find(f => f.uuid === activeFundId)?.icon}</span>
+                <span className="text-xs sm:text-sm font-medium text-emerald-700 truncate">{funds?.find(f => f.uuid === activeFundId)?.name}</span>
+                <span className="text-[9px] sm:text-xs text-emerald-500 ml-auto flex-shrink-0">Otomatis</span>
               </div>
             </div>
           )}
@@ -368,14 +374,14 @@ export default function TransactionForm({ onClose, onSuccess, activeFundId, edit
           {/* Categories (Not for Transfer) */}
           {type !== 'transfer' && (
             <div>
-              <label className="block text-[11px] font-medium text-slate-400 uppercase mb-2">Kategori</label>
-              <div className="grid grid-cols-3 gap-2">
+              <label className="block text-[10px] sm:text-[11px] font-medium text-slate-400 uppercase mb-2">Kategori</label>
+              <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
                 {(type === 'expense' ? expenseCategories : incomeCategories).map(cat => (
                   <button
                     key={cat}
                     onClick={() => setCategory(cat)}
                     className={clsx(
-                      "p-2 rounded-lg text-xs font-medium border transition-all duration-200",
+                      "p-1.5 sm:p-2 rounded-lg text-[9px] sm:text-xs font-medium border transition-all duration-200 truncate",
                       category === cat ?
                         (type === 'expense' ? "bg-rose-50 text-rose-600 border-rose-200" : "bg-emerald-50 text-emerald-600 border-emerald-200")
                         : "bg-white text-slate-500 border-slate-100 hover:border-slate-300 hover:bg-slate-50"
@@ -390,57 +396,57 @@ export default function TransactionForm({ onClose, onSuccess, activeFundId, edit
 
           {/* Date & Time & Note */}
           <div>
-            <label className="block text-[11px] font-medium text-slate-400 uppercase mb-1.5">Tanggal, Waktu & Catatan</label>
-            <div className="flex gap-2">
-              <div className="w-1/3 relative">
-                <div className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"><CalendarIcon size={14} /></div>
+            <label className="block text-[10px] sm:text-[11px] font-medium text-slate-400 uppercase mb-1.5">Tanggal, Waktu & Catatan</label>
+            <div className="flex flex-col sm:flex-row gap-2 mb-2">
+              <div className="sm:w-1/3 relative">
+                <div className="absolute left-2 sm:left-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none flex-shrink-0"><CalendarIcon size={13} className="sm:w-3.5 sm:h-3.5" /></div>
                 <input
                   type="date"
-                  className="w-full p-2.5 pl-8 border border-slate-200 rounded-lg text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
+                  className="w-full p-2 sm:p-2.5 pl-7 sm:pl-8 border border-slate-200 rounded-lg text-[10px] sm:text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
                   value={date}
                   onChange={e => setDate(e.target.value)}
                 />
               </div>
-              <div className="w-1/4 relative">
-                <div className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs">🕐</div>
+              <div className="sm:w-1/4 relative">
+                <div className="absolute left-2 sm:left-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none flex-shrink-0"><Clock size={13} className="sm:w-3.5 sm:h-3.5" /></div>
                 <input
                   type="time"
-                  className="w-full p-2.5 pl-8 border border-slate-200 rounded-lg text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
+                  className="w-full p-2 sm:p-2.5 pl-7 sm:pl-8 border border-slate-200 rounded-lg text-[10px] sm:text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
                   value={time}
                   onChange={e => setTime(e.target.value)}
                 />
               </div>
-              <div className="flex-1 relative">
-                <div className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"><FileText size={14} /></div>
-                <input
-                  type="text"
-                  className="w-full p-2.5 pl-8 border border-slate-200 rounded-lg text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
-                  placeholder="Catatan opsional..."
-                  value={note}
-                  onChange={e => setNote(e.target.value)}
-                />
-              </div>
+            </div>
+            <div className="relative">
+              <div className="absolute left-2 sm:left-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none flex-shrink-0"><FileText size={13} className="sm:w-3.5 sm:h-3.5" /></div>
+              <input
+                type="text"
+                className="w-full p-2 sm:p-2.5 pl-7 sm:pl-8 border border-slate-200 rounded-lg text-xs sm:text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
+                placeholder="Catatan (opsional)"
+                value={note}
+                onChange={e => setNote(e.target.value)}
+              />
             </div>
           </div>
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t border-slate-100 bg-slate-50/50 space-y-2">
+        <div className="p-3 sm:p-4 border-t border-slate-100 bg-slate-50/50 space-y-2">
           <button
             onClick={handleSubmit}
             disabled={!amount || !walletId}
-            className="w-full bg-slate-900 dark:bg-slate-800/75 disabled:bg-slate-300 dark:disabled:bg-slate-400 text-white py-3.5 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 hover:bg-slate-800 active:scale-[0.98] transition-all"
+            className="w-full bg-slate-900 dark:bg-slate-800/75 disabled:bg-slate-300 dark:disabled:bg-slate-400 text-white py-3 sm:py-3.5 rounded-lg sm:rounded-xl font-semibold text-xs sm:text-sm flex items-center justify-center gap-2 hover:bg-slate-800 active:scale-[0.98] transition-all"
           >
-            <Check size={18} strokeWidth={2.5} /> {isEditMode ? 'Simpan Perubahan' : 'Simpan Transaksi'}
+            <Check size={16} className="sm:w-[18px] sm:h-[18px]" strokeWidth={2.5} /> {isEditMode ? 'Simpan Perubahan' : 'Simpan Transaksi'}
           </button>
 
           {isEditMode && (
             <button
               onClick={() => setShowDeleteConfirm(true)}
               disabled={isDeleting}
-              className="w-full bg-white border border-rose-200 text-rose-600 py-3 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 hover:bg-rose-50 active:scale-[0.98] transition-all"
+              className="w-full bg-white border border-rose-200 text-rose-600 py-2.5 sm:py-3 rounded-lg sm:rounded-xl font-semibold text-xs sm:text-sm flex items-center justify-center gap-2 hover:bg-rose-50 active:scale-[0.98] transition-all"
             >
-              <Trash2 size={16} /> {isDeleting ? 'Menghapus...' : 'Hapus Transaksi'}
+              <Trash2 size={14} className="sm:w-4 sm:h-4" /> {isDeleting ? 'Menghapus...' : 'Hapus Transaksi'}
             </button>
           )}
         </div>
