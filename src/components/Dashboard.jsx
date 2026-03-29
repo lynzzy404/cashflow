@@ -87,7 +87,10 @@ export default function Dashboard({ onAddTransaction, onViewWallets, activeFundI
                   {wallet.type === 'bank' ? <CreditCard size={16} /> : 
                    wallet.type === 'ewallet' ? <Wallet size={16} /> : <Banknote size={16} />}
                 </div>
-                <span className="font-medium text-slate-700 text-sm">{wallet.name}</span>
+                <div>
+                  <div className="font-medium text-slate-700 text-sm">{wallet.name}</div>
+                  <div className="text-[11px] text-slate-400 capitalize">{wallet.type}</div>
+                </div>
               </div>
               <span className={clsx("font-semibold text-sm", wallet.balance >= 0 ? "text-slate-800" : "text-rose-600")}>
                 Rp {wallet.balance.toLocaleString('id-ID')}
@@ -132,7 +135,7 @@ export default function Dashboard({ onAddTransaction, onViewWallets, activeFundI
                     <div className="text-[11px] text-slate-400 mt-0.5 flex items-center gap-1">
                       <span className="px-1.5 py-0.5 bg-slate-50 rounded text-slate-500">{tx.walletName}</span>
                       <span>•</span>
-                      <span>{format(new Date(tx.date), 'dd MMM', { locale: id })}</span>
+                      <span>{format(new Date(tx.date), 'dd MMM HH:mm', { locale: id })}</span>
                     </div>
                   </div>
                 </div>

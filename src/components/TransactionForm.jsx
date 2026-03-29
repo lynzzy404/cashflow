@@ -31,6 +31,7 @@ export default function TransactionForm({ onClose, onSuccess, activeFundId, edit
   const [fundId, setFundId] = useState('');
   const [category, setCategory] = useState('');
   const [date, setDate] = useState(format(new Date(), 'yyyy-MM-dd'));
+  const [time, setTime] = useState(format(new Date(), 'HH:mm'));
   const [note, setNote] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -41,7 +42,12 @@ export default function TransactionForm({ onClose, onSuccess, activeFundId, edit
       setAmount(formatNumber(editData.amount) || '');
       setWalletId(editData.walletId || '');
       setFundId(editData.fundId || '');
-      setDate(editData.date || format(new Date(), 'yyyy-MM-dd'));
+      
+      // Parse date and time from editData.date
+      const editDate = new Date(editData.date);
+      setDate(format(editDate, 'yyyy-MM-dd'));
+      setTime(format(editDate, 'HH:mm'));
+      
       setNote(editData.note || '');
 
       if (isEditingTransfer) {
@@ -97,6 +103,9 @@ export default function TransactionForm({ onClose, onSuccess, activeFundId, edit
   const handleSubmit = async () => {
     if (!amount || !walletId) return;
     const numAmount = parseNumber(amount);
+    
+    // Combine date and time into ISO string
+    const dateTime = new Date(`${date}T${time}:00`).toISOString();
 
     try {
       if (editData) {
@@ -110,7 +119,7 @@ export default function TransactionForm({ onClose, onSuccess, activeFundId, edit
               await db.transactions.update(tx.id, {
                 walletId,
                 amount: numAmount,
-                date,
+                date: dateTime,
                 note: `Transfer ke ${wallets.find(w => w.uuid === toWalletId)?.name}`,
                 fundId
               });
@@ -118,7 +127,7 @@ export default function TransactionForm({ onClose, onSuccess, activeFundId, edit
               await db.transactions.update(tx.id, {
                 walletId: toWalletId,
                 amount: numAmount,
-                date,
+                date: dateTime,
                 note: `Transfer dari ${wallets.find(w => w.uuid === walletId)?.name}`,
                 fundId
               });
@@ -132,7 +141,7 @@ export default function TransactionForm({ onClose, onSuccess, activeFundId, edit
             type,
             category: category || 'Lainnya',
             amount: numAmount,
-            date,
+            date: dateTime,
             note,
             fundId
           });
@@ -153,7 +162,7 @@ export default function TransactionForm({ onClose, onSuccess, activeFundId, edit
             type: 'expense',
             category: 'Transfer Out',
             amount: numAmount,
-            date,
+            date: dateTime,
             note: `Transfer ke ${wallets.find(w => w.uuid === toWalletId)?.name}`,
             transferId,
             fundId,
@@ -165,7 +174,7 @@ export default function TransactionForm({ onClose, onSuccess, activeFundId, edit
             type: 'income',
             category: 'Transfer In',
             amount: numAmount,
-            date,
+            date: dateTime,
             note: `Transfer dari ${wallets.find(w => w.uuid === walletId)?.name}`,
             transferId,
             fundId,
@@ -178,7 +187,7 @@ export default function TransactionForm({ onClose, onSuccess, activeFundId, edit
             type,
             category: category || 'Lainnya',
             amount: numAmount,
-            date,
+            date: dateTime,
             note,
             fundId,
             createdAt: new Date().toISOString()
@@ -379,9 +388,9 @@ export default function TransactionForm({ onClose, onSuccess, activeFundId, edit
             </div>
           )}
 
-          {/* Date & Note */}
+          {/* Date & Time & Note */}
           <div>
-            <label className="block text-[11px] font-medium text-slate-400 uppercase mb-1.5">Tanggal & Catatan</label>
+            <label className="block text-[11px] font-medium text-slate-400 uppercase mb-1.5">Tanggal, Waktu & Catatan</label>
             <div className="flex gap-2">
               <div className="w-1/3 relative">
                 <div className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"><CalendarIcon size={14} /></div>
@@ -390,6 +399,15 @@ export default function TransactionForm({ onClose, onSuccess, activeFundId, edit
                   className="w-full p-2.5 pl-8 border border-slate-200 rounded-lg text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
                   value={date}
                   onChange={e => setDate(e.target.value)}
+                />
+              </div>
+              <div className="w-1/4 relative">
+                <div className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs">🕐</div>
+                <input
+                  type="time"
+                  className="w-full p-2.5 pl-8 border border-slate-200 rounded-lg text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
+                  value={time}
+                  onChange={e => setTime(e.target.value)}
                 />
               </div>
               <div className="flex-1 relative">
